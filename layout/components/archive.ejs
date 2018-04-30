@@ -1,37 +1,105 @@
-<%
-var title = '';
-if (page.category) title = page.category;
-if (page.tag) title = page.tag;
-if (page.archive){
-  if (page.year) title = page.year + (page.month ? '/' + page.month : '');
-  else title = __('archive_a');
+<style>
+.archive {
+  font-family: "Open Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft Yahei", "Microsoft Jhenghei", sans-serif;
 }
+
+.archive-year {
+    margin: 20px 10px;
+    font-size: 24px;
+}
+.archive-month {
+  margin-left: 80px;
+  font-size: 20px;
+  color: #aaa;
+}
+.archive-post-time {
+    margin-left: 120px;
+    color: #aaa;
+    font-size: 14px;
+    line-height: 25px;
+    float: left;
+    display: block;
+}
+.archive-post-title {
+    font-size: 16px;
+    margin-left: 60px;
+    line-height: 1.6;
+    font-weight: normal;
+    color: grey;
+}
+.achive-post-subtitle {
+  display: block;
+  font-size: 14px;
+  margin-left: 223px;
+  color: grey;
+}
+.row {
+  margin-top: 40px;
+  margin-bottom: 30px;
+}
+.title-row {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+@media only screen and (max-device-width: 900px) {
+	.archive-month {
+		margin-left: 42px;
+	}
+  .archive-post-time {
+      margin-left: 48px;
+  }
+  .archive-post-title {
+      margin-left: 10px;
+  }
+  .title-row {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+}
+</style>
+<%
+   var lastYear;
+   var lastMonth;
 %>
 
-<article>
+<article class="container archive">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+          <% site.posts.sort('date', 'desc').each(function(post){ %>
+                <% var year = post.date.year(); %>
+                <% var month = post.date.format('MM'); %>
+                <% if (lastYear != year) { %>
+                    <% if (lastYear != null) { %>
+                       <% lastMonth = null; %>
+                    <% } %>
+                    <% lastYear = year; %>
+                    <div data-date="<%= year %>">
+                      <span class="fa fa-heart"></span>
+                      <a href="<%- url_for(config.archive_dir + '/' + year) %>" class="archive-year"><%= year %></a>
+                    </div>
+                <% } %>
 
-  <h2 class="article-title <% if (page.tag){ %> tag<% } else if (page.category){ %> category<% } %>"><%= title %></h2>
-
-  <div class="archive">
-    <% page.posts.each(function(item){ %>
-      <div class="<%= item.layout %> archive">
-        <div class="archive-post">
-          <time datetime="<%= item.date.toDate().toISOString() %>">
-            <a href="<%- config.root %><%- item.path %>"><%= item.date.format(config.date_format) %></a>
-          </time>
-          <% if (item.link){ %>
-            <% if (item.title){ %>
-            <h3 class="archive-title"><a href="<%- item.link %>" target="_blank"><span><%= item.title %></span></a></h3>
-            <% } else { %>
-            <h3 class="archive-title"><a href="<%- item.link %>" target="_blank"><span><%= item.link %></span></a></h3>
-            <% } %>
-          <% } else { %>
-            <h3 class="archive-title"><a href="<%- config.root %><%- item.path %>"><span><%= item.title %></span></a></h3>
-          <% } %>
+                <% if (!lastMonth || lastMonth != month) {%>
+                    <% lastMonth = month; %>
+                    <div class="archive-month" data-date="<%= post.date.format('YYYYMM') %>">
+                         <%=  month %>
+                    </div>
+                <% } %>
+                <div class="title-row">
+                          <h3>
+                              <span class="archive-post-time"><%= post.date.format('MM-DD') %></span>
+                              <span class="archive-post-title">
+                                <a href="<%- url_for(post.path) %>" class="archive-post-item"><%- post.title || __('posts.untitled') %></a>
+                              </span>
+                          </h3>
+                          <% if (post.subtitle && post.subtitle.length) { %>
+                            <div class="achive-post-subtitle">
+                                <%- post.subtitle %>
+                            </div>
+                          <% } %>
+                </div>
+          <% }) %>
         </div>
-      </div>
-    <% }); %>
-    <%- partial('pagination') %>
-  </div>
-
+    </div>
 </article>
